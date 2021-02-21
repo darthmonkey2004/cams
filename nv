@@ -1,0 +1,23 @@
+#!/bin/bash
+cd "/home/monkey/.local/lib/python3.6/site-packages/cams"
+if [ -n "$1" ]; then
+	script="$1"
+else
+	script="server"
+fi
+isrunning=$(pgrep python3)
+if [ -n "$isrunning" ]; then
+	echo "Python running. Killing..."
+	sudo kill $(pgrep python3)
+fi
+python3 $script.py& disown
+sleep 5
+cameras=$(python3 -c "import $script; cameras = $script.readConfToShell(); print (cameras)" | grep -v "None")
+readarray cameras <<< "$cameras"
+pos=0
+for cam in "${cameras[@]}"; do
+	pos=$(( pos + 1 ))
+	cam=$(echo "$cam" | cut -d $'\n' -f 1)
+	python3 -c "import $script; $script.analyze_stream($pos)"& disown
+done
+exit
