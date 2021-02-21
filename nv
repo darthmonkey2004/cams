@@ -1,10 +1,33 @@
 #!/bin/bash
-cd "/home/monkey/.local/lib/python3.6/site-packages/cams"
+
+setup() {
+	echo "Setup starting.."
+	haspip=$(which pip3)
+	if [ -z "$haspip" ]; then
+		sudo apt-get install -y python3-pip
+	fi
+	pip3 install opencv-contrib dlib face_recognition
+	cd ~/
+	if [ ! -d "cams" ]; then
+		git clone "https://github.com/darthmonkey2004/cams.git"
+	fi
+	cd cams
+	./scan.networkCameras.sh
+	echo "Setup exiting..."
+	
+		
+}
+camsdir="/home/monkey/.local/lib/python3.6/site-packages/cams"
+if [ ! -d "$camsdir" ]; then
+	setup
+fi
+cd "$camsdir"
 if [ -n "$1" ]; then
 	script="$1"
 else
 	script="server"
 fi
+
 isrunning=$(pgrep python3)
 if [ -n "$isrunning" ]; then
 	echo "Python running. Killing..."
